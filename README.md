@@ -22,10 +22,6 @@ To run the Ansible playbook and install Node Exporter on your target VMs, use th
 
 ansible-playbook playbook.yml
 
-If you've encrypted your variables using Ansible Vault, use:
-
-ansible-playbook playbook.yml --ask-vault-pass
-
 ## Verifying the Installation
 
 After running the playbook:
