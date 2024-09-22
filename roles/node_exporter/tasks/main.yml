@@ -1,0 +1,65 @@
+---
+- name: Create Node Exporter group
+  group:
+    name: "{{ node_exporter_group }}"
+    state: present
+
+- name: Create Node Exporter user
+  user:
+    name: "{{ node_exporter_user }}"
+    group: "{{ node_exporter_group }}"
+    shell: /usr/sbin/nologin
+    system: yes
+    create_home: no
+
+- name: Create Node Exporter install directory
+  file:
+    path: "{{ node_exporter_install_dir }}"
+    state: directory
+    owner: "{{ node_exporter_user }}"
+    group: "{{ node_exporter_group }}"
+    mode: '0755'
+
+- name: Download Node Exporter
+  get_url:
+    url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    dest: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    mode: '0644'
+
+- name: Extract Node Exporter
+  unarchive:
+    src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    dest: "/tmp"
+    remote_src: yes
+
+- name: Copy Node Exporter binary
+  copy:
+    src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"
+    dest: "{{ node_exporter_install_dir }}/node_exporter"
+    owner: "{{ node_exporter_user }}"
+    group: "{{ node_exporter_group }}"
+    mode: '0755'
+    remote_src: yes
+
+- name: Create Node Exporter systemd service
+  template:
+    src: node_exporter.service.j2
+    dest: /etc/systemd/system/node_exporter.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart Node Exporter
+
+- name: Enable and start Node Exporter service
+  systemd:
+    name: node_exporter
+    state: started
+    enabled: yes
+
+- name: Clean up temporary files
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    - "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64"

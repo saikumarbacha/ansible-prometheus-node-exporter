@@ -1,0 +1,16 @@
+---
+all:
+  children:
+    ubuntu_vms:
+      hosts:
+        ubuntu1:
+          ansible_host: <IP_ADDRESS_VM1>
+        ubuntu2:
+          ansible_host: <IP_ADDRESS_VM2>
+        # Add more hosts as needed
+  vars:
+    ansible_user: "{{ vm_user }}"
+    ansible_ssh_pass: "{{ vm_password }}"
+    ansible_become: yes
+    ansible_become_method: sudo
+    ansible_become_pass: "{{ vm_password }}"
